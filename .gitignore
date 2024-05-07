@@ -156,3 +156,8 @@ experiments
 
 *.pt
 *.mp4
+
+# GORO
+*.html
+*.txt
+*.json
