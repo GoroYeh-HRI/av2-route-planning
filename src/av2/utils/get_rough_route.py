@@ -31,6 +31,27 @@ class Step:
     goal:  Node
     instruction: str
 
+def get_latlngs_from_steps(steps):
+    """Convert a list of steps to two lists of [lats], [lngs]
+
+    Args:
+        [Step]: a list of "step"
+                Each step is a list of two "Node": start and goal.
+
+    Returns:
+        lats: a list of latitudes
+        lngs: a list of longitudes
+
+    """
+
+    lats = []
+    lngs = []
+    for step in steps:
+        lats.extend([step.start.lat, step.goal.lat])
+        lngs.extend([step.start.lng, step.goal.lng])
+    return lats, lngs
+
+
 def get_rough_route_steps(start, goal, api_key='AIzaSyBmYtO7rXCbqG02eEzLWb2FgexIve6FmvU'):
     """Get rough route using Google Route API
 

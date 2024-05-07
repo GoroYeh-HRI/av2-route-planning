@@ -3,7 +3,7 @@ import math
 import numpy as np
 import utm
 
-
+""" Functions for get_rough_route.py """
 def get_distance(wp1, wp2):
     p = (wp1.x, wp1.y)
     q = (wp2.x, wp2.y)
@@ -260,3 +260,152 @@ def connect_paths(path1, path2):
 
     return connecting_path
 
+
+
+
+"""" Function to create an ArgoverseStaticMap object """
+from pathlib import Path
+
+from av2.map.map_api import ArgoverseStaticMap, LaneSegment
+
+
+def create_argoverse_static_map(dataroot, log_id):
+    # args = Namespace(**{"dataroot": Path(dataroot), "log_id": Path(log_id)})
+    log_map_dirpath = Path(dataroot) / log_id / "map"
+    avm = ArgoverseStaticMap.from_map_dir(log_map_dirpath, build_raster=False)
+    return avm
+
+""" Functions for conversion between CityName coords & WGS84 frame """
+import av2.geometry.utm as geo_utils
+from av2.geometry.utm import CityName
+
+
+def get_city_enum_from_cityname(cityname):
+    if cityname == "ATX":
+        return CityName.ATX
+    elif cityname =="PAO":
+        return CityName.PAO
+    elif cityname =="MIA":
+        return CityName.MIA
+    elif cityname =="DTW":
+        return CityName.DTW    
+    elif cityname =="PIT":
+        return CityName.PIT
+    elif cityname =="WDC":
+        return CityName.WDC    
+    else:
+        print(f"ERROR! {cityname} NOT defined in av2.geometry.utm")  
+        raise NotImplementedError    
+
+def convert_city_coords_to_wgs84(points_city, city_name=CityName.PAO) -> None:
+    """Convert city coordinates from 'city name' coordinates.
+    Args:
+        points_city: (N,2) array, representing 2d query points in the city coordinate frame.
+        city_name: name of city, where query points are located.
+
+    Returns:
+        Array of shape (N,2), representing points in the WGS84 coordinate system, as (latitude, longitude).    
+    """
+
+    wgs84_coords = geo_utils.convert_city_coords_to_wgs84(
+        points_city, city_name
+    )
+    return wgs84_coords
+
+def ndarray_to_two_lists(arr):
+    """
+    Convert  (N,2) array to [x1, x2, ...], [y1, y2, ...]
+    """    
+    list1, list2 = zip(*arr)
+    return list1, list2
+
+from typing import Dict, Final, List, Optional, Tuple, Union
+
+from av2.geometry.utm import CITY_ORIGIN_LATLONG_DICT, convert_gps_to_utm
+from av2.utils.typing import NDArrayBool, NDArrayByte, NDArrayFloat, NDArrayInt
+
+
+def convert_wgs84_points_to_city_coords(
+    points_wgs84: Union[NDArrayFloat, NDArrayInt], city_name: CityName
+) -> NDArrayFloat:
+    """Convert WGS84 coordinates to city coordinates.
+
+    Args:
+        points_wgs84: Array of shape (N,2), representing points in the WGS84 coordinate system, as (latitude, longitude).
+        city_name: Name of city, where query points are located.
+
+    Returns:
+        2d points in city coordinates, as (N,2) array.
+    """
+    latitude, longitude = CITY_ORIGIN_LATLONG_DICT[city_name]
+    # Get (easting, northing) of origin.
+    origin_utm = convert_gps_to_utm(
+        latitude=latitude, longitude=longitude, city_name=city_name
+    )
+     
+    points_city = np.zeros_like(points_wgs84)
+    for i, (lat, long) in enumerate(points_wgs84):
+      point_utm = convert_gps_to_utm(
+          latitude=lat, longitude=long, city_name=city_name
+      )
+      points_city[i] = np.asarray(point_utm) - np.asarray(origin_utm)
+
+    return points_city
+
+
+
+""" Functions for plotting """
+import os
+import time
+
+import gmplot
+import matplotlib.pyplot as plt
+from selenium import webdriver
+
+
+def plot_coordinates_on_map(latitude_list, longitude_list, output_file='map.html', color='red', save_png=True):
+    # Set the center of the map based on the average of the provided coordinates
+    center_lat = sum(latitude_list) / len(latitude_list)
+    center_lng = sum(longitude_list) / len(longitude_list)
+    # Create a Google Map Plotter object
+    gmap = gmplot.GoogleMapPlotter(center_lat, center_lng, 13, map_type='satellite')  # Zoom level: 1=World, 20=Building
+    # Plot the coordinates on the map
+    gmap.scatter(latitude_list, longitude_list, color, size=1, marker=False)
+    # Draw the map to an HTML file
+    gmap.draw(output_file)
+    print(f"[plot_coordinates_on_map] Map saved to {output_file}")
+
+
+def plot_route_and_correct(rough_lats, rough_lngs, correct_lats, correct_lngs, output_file='map.html', color='red', save_png=True):
+    # Set the center of the map based on the average of the provided coordinates
+    center_lat = sum(correct_lats) / len(correct_lats)
+    center_lng = sum(correct_lngs) / len(correct_lngs)
+    # Create a Google Map Plotter object
+    gmap = gmplot.GoogleMapPlotter(center_lat, center_lng, 13, map_type='satellite')  # Zoom level: 1=World, 20=Building
+    # Plot the rough routes
+    gmap.scatter(rough_lats, rough_lngs, "green", size=1, marker=False)
+    # Plot the coordinates on the map
+    gmap.scatter(correct_lats, correct_lngs, color, size=1, marker=False)
+    # Draw the map to an HTML file
+    gmap.draw(output_file)
+    print(f"[plot_route_and_correct] Map saved to {output_file}")
+
+def plot_and_save_plt(lats, lngs, color="red", png_file="map.png", title="Map in city coordinates", xlabel='Longitude', ylabel='Latitude'):
+    # Create a scatter plot
+    # plt.figure(figsize=(10, 8))  # Set the size of the plot
+    plt.figure
+    plt.scatter(lngs, lats, color=color, s=5)  # Plot the coordinates
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.grid(True)  # Add grid lines
+    # Save the plot as a PNG image
+    plt.savefig(png_file)
+    print(f"Map image saved to {png_file}")    
+
+# # Example usage:
+# if __name__ == "__main__":
+#     # Example coordinates (New York City)
+#     latitude_list = [40.7128, 40.7210, 40.7484]
+#     longitude_list = [-74.0060, -73.9886, -73.9857]
+#     plot_coordinates_on_map(latitude_list, longitude_list)
