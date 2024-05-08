@@ -439,6 +439,8 @@ class ArgoverseStaticMap:
         """
         return list(self.vector_drivable_areas.values())
 
+
+
     def get_lane_segment_successor_ids(
         self, lane_segment_id: int
     ) -> Optional[List[int]]:
@@ -563,6 +565,9 @@ class ArgoverseStaticMap:
             vls_list: lane segments local to this scenario (any waypoint within 100m by L2 distance)
         """
         return list(self.vector_lane_segments.values())
+
+    def get_lane_segment_by_id(self, ls_id) -> LaneSegment:
+        return self.vector_lane_segments[ls_id]
 
     def get_nearby_lane_segments(
         self, query_center: NDArrayFloat, search_radius_m: float
