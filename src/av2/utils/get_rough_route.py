@@ -125,6 +125,10 @@ def get_rough_route_steps(start, goal, api_key='AIzaSyBmYtO7rXCbqG02eEzLWb2FgexI
 
     output_steps = []
 
+    if len(response_dict)==0:
+        print(f"ERROR: Can't get rough route grom Google API")
+        return
+
     # Note: inside 'routes' it's a lsit of ONE dictionary
     legs = response_dict["routes"][0]["legs"]
     for leg in legs:
@@ -172,6 +176,8 @@ def get_rough_route(start, goal, api_key='AIzaSyBmYtO7rXCbqG02eEzLWb2FgexIve6Fmv
         lats: list[float]: list of latitudes of rough route
         lngs: list[float]: list of longitudes of rough route
     """
+    print(f"start: {start}")
+    print(f"goal : {goal}")
 
     # ----------- Set up HTTP request --------------- #
     response_fields = 'routes'
@@ -230,6 +236,10 @@ def get_rough_route(start, goal, api_key='AIzaSyBmYtO7rXCbqG02eEzLWb2FgexIve6Fmv
     # ----------- Iterate HTTP response and extract lat lng --------------- #
     latitude_list  = []
     longitude_list = []
+
+    if len(response_dict)==0:
+        print(f"ERROR: Can't get rough route grom Google API")
+        return
 
     init = False
     # Note: inside 'routes' it's a lsit of ONE dictionary
