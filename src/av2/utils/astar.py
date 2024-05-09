@@ -25,7 +25,6 @@ def calc_ls_position(avmap, ls_id):
     xs = ls_centerline[:,0]
     ys = ls_centerline[:,1]
     ls_pos = (np.mean(xs), np.mean(ys))
-    # print(f"ls {ls_id} pos {ls_pos}")
     return ls_pos
 
 import heapq
