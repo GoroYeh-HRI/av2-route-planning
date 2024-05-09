@@ -368,7 +368,7 @@ def plot_coordinates_on_map(latitude_list, longitude_list, output_file='map.html
     center_lat = sum(latitude_list) / len(latitude_list)
     center_lng = sum(longitude_list) / len(longitude_list)
     # Create a Google Map Plotter object
-    gmap = gmplot.GoogleMapPlotter(center_lat, center_lng, 13, map_type='satellite')  # Zoom level: 1=World, 20=Building
+    gmap = gmplot.GoogleMapPlotter(center_lat, center_lng, 13, map_type='satellite', apikey="AIzaSyCINQSR91iBJVrH7CXhNU-wBU6mJWtyIzk")  # Zoom level: 1=World, 20=Building
     # Plot the coordinates on the map
     gmap.scatter(latitude_list, longitude_list, color, size=1, marker=False)
     # Draw the map to an HTML file
@@ -381,7 +381,7 @@ def plot_route_and_correct(rough_lats, rough_lngs, correct_lats, correct_lngs, o
     center_lat = sum(correct_lats) / len(correct_lats)
     center_lng = sum(correct_lngs) / len(correct_lngs)
     # Create a Google Map Plotter object
-    gmap = gmplot.GoogleMapPlotter(center_lat, center_lng, 13, map_type='satellite')  # Zoom level: 1=World, 20=Building
+    gmap = gmplot.GoogleMapPlotter(center_lat, center_lng, 13, map_type='satellite', apikey="AIzaSyCINQSR91iBJVrH7CXhNU-wBU6mJWtyIzk")  # Zoom level: 1=World, 20=Building
     # Plot the rough routes
     gmap.scatter(rough_lats, rough_lngs, "green", size=1, marker=False)
     # Plot the coordinates on the map
