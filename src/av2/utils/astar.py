@@ -40,13 +40,16 @@ def astar(avmap, start_node, goal_node):
     open_list = []
     closed_set = set()
     
-    
     heapq.heappush(open_list, start_node)
-    
+    final_node = None
+
     while open_list:
+
         current_node = heapq.heappop(open_list)
-        
+        final_node = current_node
+
         if current_node == goal_node:
+
             path = [] # a list of node.lsid
             while current_node:
                 path.append(current_node.lsid)
@@ -70,6 +73,16 @@ def astar(avmap, start_node, goal_node):
                     if open_node == neighbor and open_node.g > neighbor.g:
                         open_node.g = neighbor.g
                         open_node.parent = neighbor.parent
+    
+
+    print(f"Astar failed. Not able to find the path")
+    # return from what we have
+    path = [] # a list of node.lsid
+    while final_node:
+        path.append(final_node.lsid)
+        final_node = final_node.parent
+    return path[::-1]
+
 
 # TODO: Instead of 4 direction, find neighbors from ls.successors/right_neighbor_id/left_neighbor
 def get_neighbors(avmap, node):
@@ -81,18 +94,22 @@ def get_neighbors(avmap, node):
 
     # ls.successors
     for successor_id in suc_ids:
-        pos = calc_ls_position(avmap, successor_id)
-        neighbors.append(AstarNode(successor_id, pos, node))
+        if successor_id in avmap.vector_lane_segments:
+            pos = calc_ls_position(avmap, successor_id)
+            neighbors.append(AstarNode(successor_id, pos, node))
+
 
     # left neighbor
     if left_id:
-        pos = calc_ls_position(avmap, left_id)
-        neighbors.append(AstarNode(left_id, pos, node))
+        if left_id in avmap.vector_lane_segments:
+            pos = calc_ls_position(avmap, left_id)
+            neighbors.append(AstarNode(left_id, pos, node))
 
     # right neighbor
     if right_id:
-        pos = calc_ls_position(avmap, right_id)
-        neighbors.append(AstarNode(right_id, pos, node))                
+        if right_id in avmap.vector_lane_segments:        
+            pos = calc_ls_position(avmap, right_id)
+            neighbors.append(AstarNode(right_id, pos, node))                
     
     return neighbors
 
